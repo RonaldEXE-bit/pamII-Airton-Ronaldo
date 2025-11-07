@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', color: '#1F2937' },
   subtitle: { fontSize: 14, color: '#6B7280', marginTop: 4 },
   item: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fff', #deep#
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
