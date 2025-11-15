@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import Toast from 'react-native-toast-message';
 
 const STORAGE_KEY = '@subscriptions';
 const CATEGORIES = ['Streaming', 'Música', 'Software', 'Games', 'Cloud', 'Outros'];
@@ -51,10 +52,6 @@ export default function AddSubscription() {
     setStatus(params.status || 'active');
   };
 
-  const generateId = () => {
-    return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
-  };
-
   const validateForm = () => {
     if (!name.trim()) {
       Alert.alert('Erro', 'Por favor, informe o nome da assinatura');
@@ -76,71 +73,74 @@ export default function AddSubscription() {
     return true;
   };
 
- const handleSave = async () => {
-  if (!validateForm()) return;
-
-  setLoading(true);
-
-  try {
-    const stored = await AsyncStorage.getItem(STORAGE_KEY);
-    let subscriptions = [];
-
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        subscriptions = Array.isArray(parsed) ? parsed : [];
-      } catch {
-        subscriptions = [];
+  const handleSave = async () => {
+    if (!validateForm()) return;
+  
+    setLoading(true);
+  
+    try {
+      // Carrega assinaturas já salvas
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      let subscriptions = [];
+  
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          subscriptions = Array.isArray(parsed) ? parsed : [];
+        } catch {
+          subscriptions = [];
+        }
       }
+      
+      
+      // Cria nova assinatura
+      const parsedAmount = Number(String(amount).replace(',', '.').trim());
+      const parsedDueDay = parseInt(dueDay);
+  
+      const subscriptionData = {
+        id: isEdit ? params.id : Date.now().toString(),
+        name: name.trim(),
+        amount: parsedAmount,
+        dueDay: parsedDueDay,
+        periodicity,
+        category,
+        paymentMethod: paymentMethod.trim(),
+        notes: notes.trim(),
+        status,
+        createdAt: isEdit ? params.createdAt || new Date().toISOString() : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+  
+      // Atualiza lista
+      let updatedSubscriptions;
+      if (isEdit) {
+        updatedSubscriptions = subscriptions.map(sub =>
+          sub.id === params.id ? { ...sub, ...subscriptionData } : sub
+        );
+      } else {
+        updatedSubscriptions = [...subscriptions, subscriptionData];
+      }
+  
+      // Salva no AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSubscriptions));
+  
+      // Toast de sucesso
+      Toast.show({
+        type: 'success',
+        text1: 'Assinatura adicionada!',
+        text2: `${subscriptionData.name} foi salva com sucesso.`,
+      });
+  
+      // Volta para o dashboard
+      router.replace('/');
+    } catch (error) {
+      console.error('Erro ao salvar assinatura:', error);
+      Alert.alert('Erro', 'Não foi possível salvar a assinatura');
+    } finally {
+      setLoading(false);
     }
-
-    const parsedAmount = Number(String(amount).replace(',', '.').trim());
-    const parsedDueDay = parseInt(dueDay);
-
-    const subscriptionData = {
-      id: isEdit ? params.id : Date.now().toString(),
-      name: name.trim(),
-      amount: parsedAmount,
-      dueDay: parsedDueDay,
-      periodicity,
-      category,
-      paymentMethod: paymentMethod.trim(),
-      notes: notes.trim(),
-      status,
-      createdAt: isEdit ? params.createdAt || new Date().toISOString() : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    let updatedSubscriptions;
-
-    if (isEdit) {
-      updatedSubscriptions = subscriptions.map(sub =>
-        sub.id === params.id ? { ...sub, ...subscriptionData } : sub
-      );
-    } else {
-      updatedSubscriptions = [...subscriptions, subscriptionData];
-    }
-
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSubscriptions));
-
-    Alert.alert(
-      'Assinatura adicionada!',
-      `${subscriptionData.name} foi salva com sucesso.`,
-      [
-        {
-          text: 'Ver no Dashboard',
-          onPress: () => router.replace('/'), // 👈 redireciona para o dashboard
-        },
-      ]
-    );
-  } catch (error) {
-    console.error('Erro ao salvar assinatura:', error);
-    Alert.alert('Erro', 'Não foi possível salvar a assinatura');
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
+  
 
   const renderDayOptions = () => {
     const days = [];
@@ -211,36 +211,36 @@ export default function AddSubscription() {
           </View>
         </View>
 
-        <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-  <Text style={styles.label}>Dia do mês para cobrança *</Text>
-  <View style={styles.pickerContainer}>
-    <Picker
-      selectedValue={dueDay}
-      onValueChange={setDueDay}
-      style={styles.picker}
-    >
-      {renderDayOptions()}
-    </Picker>
-  </View>
-  <Text style={styles.hint}>
-    Ex: 15 para cobrança no dia 15 de cada mês ou ano
-  </Text>
-</View>
-
-          <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.label}>Categoria</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={category}
-                onValueChange={setCategory}
-                style={styles.picker}
-              >
-                {CATEGORIES.map(cat => (
-                  <Picker.Item key={cat} label={cat} value={cat} />
-                ))}
-              </Picker>
-            </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Dia do mês para cobrança *</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={dueDay}
+              onValueChange={setDueDay}
+              style={styles.picker}
+            >
+              {renderDayOptions()}
+            </Picker>
           </View>
+          <Text style={styles.hint}>
+            Ex: 15 para cobrança no dia 15 de cada mês ou ano
+          </Text>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Categoria</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={category}
+              onValueChange={setCategory}
+              style={styles.picker}
+            >
+              {CATEGORIES.map(cat => (
+                <Picker.Item key={cat} label={cat} value={cat} />
+              ))}
+            </Picker>
+          </View>
+        </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Método de Pagamento</Text>
@@ -270,7 +270,7 @@ export default function AddSubscription() {
           </View>
         )}
 
-       <View style={styles.inputGroup}>
+        <View style={styles.inputGroup}>
           <Text style={styles.label}>Notas</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
@@ -282,7 +282,7 @@ export default function AddSubscription() {
             maxLength={200}
             textAlignVertical="top"
           />
-          <Text style={styles.charCount}>{notes.length}/200</Text>
+                    <Text style={styles.charCount}>{notes.length}/200</Text>
         </View>
 
         <TouchableOpacity 
@@ -315,6 +315,7 @@ export default function AddSubscription() {
     </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -438,10 +439,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   hint: {
-  fontSize: 12,
-  color: '#6B7280',
-  marginTop: 4,
-},
-
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 4,
+  },
 });
-

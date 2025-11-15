@@ -20,3 +20,4 @@ export const saveSubscriptions = async (list) => {
     console.error('Erro ao salvar:', e);
   }
 };
+

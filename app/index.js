@@ -1,115 +1,186 @@
-import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { getSubscriptions } from '../utils/storage';
+import ThemeToggle from '../components/ThemeToggle';
 import { getDaysUntilDue } from '../utils/dateUtils';
+import { getServiceIcon } from '../utils/icons';
+import { getSubscriptions } from '../utils/storage';
 
 export default function HomeScreen() {
-  const router = useRouter();
+  const [darkMode, setDarkMode] = useState(false);
   const [subscriptions, setSubscriptions] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
+
+  useFocusEffect(
+    useCallback(() => {
+      loadSubscriptions();
+    }, [])
+  );
 
   const loadSubscriptions = async () => {
-    const data = await getSubscriptions();
-    setSubscriptions(data);
-  };
-
-  useFocusEffect(useCallback(() => {
-    loadSubscriptions();
-  }, []));
-
-  const getTotalMonthly = () => {
-    return subscriptions
-      .filter(sub => sub.status !== 'cancelled')
-      .reduce((total, sub) => {
-        const amt = Number(sub.amount) || 0;
-        if (sub.periodicity === 'yearly') return total + amt / 12;
-        if (sub.periodicity === 'quarterly') return total + amt / 3;
-        return total + amt;
-      }, 0).toFixed(2);
-  };
-
-  const renderItem = ({ item }) => {
-    const days = getDaysUntilDue(item.dueDay);
-    const statusColor = item.status === 'cancelled' ? '#6B7280' : days <= 3 ? '#F59E0B' : '#10B981';
-
-    return (
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => router.push({ pathname: '/details', params: { id: item.id } })}
-      >
-        <View>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.details}>R$ {item.amount} • {item.periodicity}</Text>
-        </View>
-        <View style={[styles.badge, { backgroundColor: statusColor }]}>
-          <Text style={styles.badgeText}>
-            {item.status === 'cancelled' ? 'Cancelada' : `Em ${days} dias`}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+    const subs = await getSubscriptions();
+    setSubscriptions(subs);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Subtrack</Text>
-        <Text style={styles.subtitle}>Total mensal: R$ {getTotalMonthly()}</Text>
+    <View style={{ flex: 1, backgroundColor: darkMode ? '#111827' : '#F9FAFB' }}>
+      {/* Botão de tema */}
+      <View style={{ alignItems: 'flex-end', padding: 16 }}>
+        <ThemeToggle onToggle={setDarkMode} />
       </View>
 
-      <FlatList
-        data={subscriptions}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadSubscriptions} />}
-        contentContainerStyle={{ padding: 16 }}
-      />
+      {/* Título */}
+      <Text style={[styles.title, { color: darkMode ? '#fff' : '#000' }]}>
+        Subtrack
+      </Text>
 
+      {/* Total mensal */}
+      <Text style={[styles.subtitle, { color: darkMode ? '#fff' : '#000' }]}>
+        Total mensal: R$ {subscriptions.reduce((acc, s) => acc + s.amount, 0).toFixed(2)}
+      </Text>
+
+      {/* Botão adicionar */}
       <TouchableOpacity
-        style={styles.fab}
+        style={styles.addButton}
         onPress={() => router.push('/add-subscription')}
       >
-        <Ionicons name="add" size={28} color="#fff" />
+        <Text style={styles.addButtonText}>+ Adicionar</Text>
       </TouchableOpacity>
+
+      {/* Lista */}
+      <FlatList
+        data={subscriptions}
+        keyExtractor={(item) => item.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadSubscriptions} />}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: '/subscription/[id]',
+                params: {
+                  id: item.id,
+                  name: item.name,
+                  amount: item.amount,
+                  dueDay: item.dueDay,
+                  category: item.category,
+                  paymentType: item.paymentType,   // ✅ passa tipo de pagamento
+                  description: item.description,   // ✅ passa descrição
+                },
+              })
+            }
+          >
+            <View style={[
+              styles.card,
+              { backgroundColor: darkMode ? '#1F2937' : '#fff' }
+            ]}>
+              {/* Ícone dinâmico */}
+              <View style={{ alignItems: 'center', marginBottom: 8 }}>
+                {getServiceIcon(item.name, 40)}
+              </View>
+
+              {/* Nome */}
+              <Text style={[styles.cardTitle, { color: darkMode ? '#fff' : '#000' }]}>
+                {item.name}
+              </Text>
+
+              {/* Valor + vencimento */}
+              <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+                R$ {item.amount.toFixed(2)} — vence em {getDaysUntilDue(item.dueDay)} dias
+              </Text>
+
+              {/* Tipo de pagamento */}
+              {item.paymentType ? (
+                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+                  💳 {item.paymentType}
+                </Text>
+              ) : null}
+
+              {/* Descrição */}
+              {item.description ? (
+                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+                  📝 {item.description}
+                </Text>
+              ) : null}
+
+              {/* Badge */}
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{item.category}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: { padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1F2937' },
-  subtitle: { fontSize: 14, color: '#6B7280', marginTop: 4 },
-  item: {
-    backgroundColor: '#fff', #deep#
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    marginTop: 8,
+  },
+  subtitle: {
+    marginLeft: 16,
+    marginBottom: 8,
+    fontSize: 16,
+  },
+  addButton: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginLeft: 16,
+    marginBottom: 12,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  card: {
+    marginHorizontal: 16,
+    marginVertical: 8,
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  name: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
-  details: { fontSize: 14, color: '#6B7280' },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    marginBottom: 6,
+  },
   badge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#10B981',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    marginTop: 6,
   },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#2563EB',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
