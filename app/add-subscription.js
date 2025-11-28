@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -75,28 +75,15 @@ export default function AddSubscription() {
 
   const handleSave = async () => {
     if (!validateForm()) return;
-  
     setLoading(true);
-  
+
     try {
-      // Carrega assinaturas já salvas
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      let subscriptions = [];
-  
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          subscriptions = Array.isArray(parsed) ? parsed : [];
-        } catch {
-          subscriptions = [];
-        }
-      }
-      
-      
-      // Cria nova assinatura
+      let subscriptions = stored ? JSON.parse(stored) : [];
+
       const parsedAmount = Number(String(amount).replace(',', '.').trim());
       const parsedDueDay = parseInt(dueDay);
-  
+
       const subscriptionData = {
         id: isEdit ? params.id : Date.now().toString(),
         name: name.trim(),
@@ -110,8 +97,7 @@ export default function AddSubscription() {
         createdAt: isEdit ? params.createdAt || new Date().toISOString() : new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-  
-      // Atualiza lista
+
       let updatedSubscriptions;
       if (isEdit) {
         updatedSubscriptions = subscriptions.map(sub =>
@@ -120,18 +106,15 @@ export default function AddSubscription() {
       } else {
         updatedSubscriptions = [...subscriptions, subscriptionData];
       }
-  
-      // Salva no AsyncStorage
+
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSubscriptions));
-  
-      // Toast de sucesso
+
       Toast.show({
         type: 'success',
-        text1: 'Assinatura adicionada!',
+        text1: isEdit ? 'Assinatura atualizada!' : 'Assinatura adicionada!',
         text2: `${subscriptionData.name} foi salva com sucesso.`,
       });
-  
-      // Volta para o dashboard
+
       router.replace('/');
     } catch (error) {
       console.error('Erro ao salvar assinatura:', error);
@@ -140,69 +123,46 @@ export default function AddSubscription() {
       setLoading(false);
     }
   };
-  
 
   const renderDayOptions = () => {
     const days = [];
     for (let i = 1; i <= 31; i++) {
-      days.push(
-        <Picker.Item key={i} label={`Dia ${i}`} value={i.toString()} />
-      );
+      days.push(<Picker.Item key={i} label={`Dia ${i}`} value={i.toString()} />);
     }
     return days;
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#2563EB" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isEdit ? 'Editar Assinatura' : 'Nova Assinatura'}
-        </Text>
+        <Text style={styles.headerTitle}>{isEdit ? 'Editar Assinatura' : 'Nova Assinatura'}</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Nome */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Nome do Serviço *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Netflix, Spotify..."
-            value={name}
-            onChangeText={setName}
-            maxLength={50}
-          />
+          <TextInput style={styles.input} placeholder="Ex: Netflix, Spotify..." value={name} onChangeText={setName} />
         </View>
 
+        {/* Valor + periodicidade */}
         <View style={styles.row}>
           <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
             <Text style={styles.label}>Valor *</Text>
             <View style={styles.amountContainer}>
               <Text style={styles.currencySymbol}>R$</Text>
-              <TextInput
-                style={styles.amountInput}
-                placeholder="0,00"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="decimal-pad"
-                maxLength={10}
-              />
+              <TextInput style={styles.amountInput} placeholder="0,00" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
             </View>
           </View>
 
           <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
             <Text style={styles.label}>Periodicidade</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={periodicity}
-                onValueChange={setPeriodicity}
-                style={styles.picker}
-              >
+              <Picker selectedValue={periodicity} onValueChange={setPeriodicity} style={styles.picker}>
                 <Picker.Item label="Mensal" value="monthly" />
                 <Picker.Item label="Anual" value="yearly" />
                 <Picker.Item label="Trimestral" value="quarterly" />
@@ -211,57 +171,38 @@ export default function AddSubscription() {
           </View>
         </View>
 
+        {/* Dia cobrança */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Dia do mês para cobrança *</Text>
           <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={dueDay}
-              onValueChange={setDueDay}
-              style={styles.picker}
-            >
+            <Picker selectedValue={dueDay} onValueChange={setDueDay} style={styles.picker}>
               {renderDayOptions()}
             </Picker>
           </View>
-          <Text style={styles.hint}>
-            Ex: 15 para cobrança no dia 15 de cada mês ou ano
-          </Text>
         </View>
 
+        {/* Categoria */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Categoria</Text>
           <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={category}
-              onValueChange={setCategory}
-              style={styles.picker}
-            >
-              {CATEGORIES.map(cat => (
-                <Picker.Item key={cat} label={cat} value={cat} />
-              ))}
+            <Picker selectedValue={category} onValueChange={setCategory} style={styles.picker}>
+              {CATEGORIES.map(cat => <Picker.Item key={cat} label={cat} value={cat} />)}
             </Picker>
           </View>
         </View>
 
+        {/* Método de pagamento */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Método de Pagamento</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ex: Cartão final 4512, PIX..."
-            value={paymentMethod}
-            onChangeText={setPaymentMethod}
-            maxLength={30}
-          />
+          <TextInput style={styles.input} placeholder="Ex: Cartão final 4512, PIX..." value={paymentMethod} onChangeText={setPaymentMethod} />
         </View>
 
+        {/* Status só em edição */}
         {isEdit && (
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Status</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={status}
-                onValueChange={setStatus}
-                style={styles.picker}
-              >
+              <Picker selectedValue={status} onValueChange={setStatus} style={styles.picker}>
                 <Picker.Item label="Ativa" value="active" />
                 <Picker.Item label="Cancelada" value="cancelled" />
                 <Picker.Item label="Suspensa" value="paused" />
@@ -270,48 +211,21 @@ export default function AddSubscription() {
           </View>
         )}
 
+        {/* Notas */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Notas</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Observações, detalhes do plano..."
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={3}
-            maxLength={200}
-            textAlignVertical="top"
-          />
-                    <Text style={styles.charCount}>{notes.length}/200</Text>
+          <TextInput style={[styles.input, styles.textArea]} placeholder="Observações, detalhes do plano..." value={notes} onChangeText={setNotes} multiline />
         </View>
 
-        <TouchableOpacity 
-          style={[
-            styles.saveButton, 
-            loading && styles.saveButtonDisabled
-          ]} 
-          onPress={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <Text style={styles.saveButtonText}>Salvando...</Text>
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-              <Text style={styles.saveButtonText}>
-                {isEdit ? 'Atualizar' : 'Criar'} Assinatura
-              </Text>
-            </>
-          )}
+        {/* Botões */}
+        <TouchableOpacity style={[styles.saveButton, loading && styles.saveButtonDisabled]} onPress={handleSave} disabled={loading}>
+          {loading ? <Text style={styles.saveButtonText}>Salvando...</Text> : <Text style={styles.saveButtonText}>{isEdit ? 'Salvar Alterações' : 'Criar Assinatura'}</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.cancelButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
           <Text style={styles.cancelButtonText}>Cancelar</Text>
         </TouchableOpacity>
-      </ScrollView>
+            </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -367,12 +281,6 @@ const styles = StyleSheet.create({
   textArea: {
     minHeight: 80,
   },
-  charCount: {
-    fontSize: 12,
-    color: '#6B7280',
-    textAlign: 'right',
-    marginTop: 4,
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -409,7 +317,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#2563EB',
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
@@ -424,7 +331,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8,
   },
   cancelButton: {
     padding: 16,
@@ -437,10 +343,5 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontSize: 16,
     fontWeight: '500',
-  },
-  hint: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
   },
 });

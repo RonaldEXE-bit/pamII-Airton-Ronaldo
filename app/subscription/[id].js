@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getServiceIcon } from '../../utils/icons';
+import { removeSubscription } from '../../utils/storage';
 
 export default function SubscriptionDetail() {
   const { id, name, amount, dueDay, category, paymentType, description } = useLocalSearchParams();
@@ -27,9 +27,9 @@ export default function SubscriptionDetail() {
         {
           text: 'Excluir',
           style: 'destructive',
-          onPress: () => {
-            // TODO: implementar removeSubscription(id)
-            router.back();
+          onPress: async () => {
+            await removeSubscription(id);
+            router.push('/');
           },
         },
       ]
@@ -37,47 +37,49 @@ export default function SubscriptionDetail() {
   };
 
   const handleBack = () => {
-    router.push('/'); // volta para a tela inicial (index.js)
+    router.push('/');
   };
 
+  const darkMode = true;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
+    <View style={[styles.container, { backgroundColor: darkMode ? '#0F172A' : '#F9FAFB' }]}>
+      <View style={[styles.card, { backgroundColor: darkMode ? '#1F2937' : '#fff', borderColor: darkMode ? '#374151' : '#E5E7EB' }]}>
         {/* Ícone dinâmico */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           {getServiceIcon(name, 50)}
         </View>
 
         {/* Nome */}
-        <Text style={styles.title}>{name}</Text>
+        <Text style={[styles.title, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{name}</Text>
 
-        {/* Caixinhas com borda e cores diferentes */}
+        {/* Caixinhas */}
         <View style={[styles.box, { borderColor: '#F59E0B' }]}>
           <Text style={styles.boxLabel}>💰 Valor</Text>
-          <Text style={styles.boxValue}>R$ {parseFloat(amount).toFixed(2)}</Text>
+          <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>R$ {parseFloat(amount).toFixed(2)}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#3B82F6' }]}>
           <Text style={styles.boxLabel}>📅 Dia de cobrança</Text>
-          <Text style={styles.boxValue}>{dueDay}</Text>
+          <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{dueDay}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#10B981' }]}>
           <Text style={styles.boxLabel}>💳 Tipo de pagamento</Text>
-          <Text style={styles.boxValue}>{paymentType || 'Não informado'}</Text>
+          <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{paymentType || 'Não informado'}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#8B5CF6' }]}>
           <Text style={styles.boxLabel}>📝 Descrição</Text>
-          <Text style={styles.boxValue}>{description || 'Sem descrição'}</Text>
+          <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{description || 'Sem descrição'}</Text>
         </View>
 
-        {/* Badge de categoria */}
+        {/* Badge */}
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{category}</Text>
         </View>
 
-        {/* Botões de ação */}
+        {/* Botões */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.payButton} onPress={handlePay}>
             <Text style={styles.buttonText}>💳 Pagar</Text>
@@ -90,7 +92,7 @@ export default function SubscriptionDetail() {
           </TouchableOpacity>
         </View>
 
-        {/* Botão voltar */}
+        {/* Voltar */}
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Text style={styles.buttonText}>⬅️ Voltar ao início</Text>
         </TouchableOpacity>
@@ -100,15 +102,13 @@ export default function SubscriptionDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB', padding: 20 },
+  container: { flex: 1, padding: 20 },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 4,
   },
@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#111827',
     textAlign: 'center',
   },
   box: {
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
   },
   boxLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',
     marginBottom: 4,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -135,7 +134,6 @@ const styles = StyleSheet.create({
   },
   boxValue: {
     fontSize: 16,
-    color: '#111827',
     fontWeight: '600',
   },
   badge: {

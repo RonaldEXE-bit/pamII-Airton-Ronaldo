@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -65,15 +65,17 @@ export default function HomeScreen() {
           <TouchableOpacity
             onPress={() =>
               router.push({
-                pathname: '/subscription/[id]',
+                pathname: '/subscription/details',
                 params: {
                   id: item.id,
                   name: item.name,
                   amount: item.amount,
                   dueDay: item.dueDay,
                   category: item.category,
-                  paymentType: item.paymentType,   // ✅ passa tipo de pagamento
-                  description: item.description,   // ✅ passa descrição
+                  paymentMethod: item.paymentMethod, // ✅ corrigido
+                  notes: item.notes,                 // ✅ corrigido
+                  status: item.status,
+                  periodicity: item.periodicity,
                 },
               })
             }
@@ -98,16 +100,16 @@ export default function HomeScreen() {
               </Text>
 
               {/* Tipo de pagamento */}
-              {item.paymentType ? (
+              {item.paymentMethod ? (
                 <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
-                  💳 {item.paymentType}
+                  💳 {item.paymentMethod}
                 </Text>
               ) : null}
 
-              {/* Descrição */}
-              {item.description ? (
+              {/* Notas */}
+              {item.notes ? (
                 <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
-                  📝 {item.description}
+                  📝 {item.notes}
                 </Text>
               ) : null}
 
