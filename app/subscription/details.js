@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -50,8 +51,6 @@ export default function SubscriptionDetails() {
   const deleteSubscription = async () => {
     try {
       const currentId = getCurrentId();
-      console.log('Tentando excluir id:', currentId);
-
       if (!currentId) {
         Alert.alert('Erro', 'ID da assinatura não encontrado.');
         return;
@@ -70,28 +69,40 @@ export default function SubscriptionDetails() {
       }
 
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSubscriptions));
-      Alert.alert('Pronto', 'Assinatura excluída com sucesso.');
+
+      if (Platform.OS === 'web') {
+        alert('Assinatura excluída com sucesso.');
+      } else {
+        Alert.alert('Pronto', 'Assinatura excluída com sucesso.');
+      }
+
       router.replace('/'); // volta para dashboard
     } catch (error) {
       console.error('Erro ao excluir assinatura:', error);
-      Alert.alert('Erro', 'Não foi possível excluir a assinatura');
+      if (Platform.OS === 'web') {
+        alert('Não foi possível excluir a assinatura');
+      } else {
+        Alert.alert('Erro', 'Não foi possível excluir a assinatura');
+      }
     }
   };
 
   const handleDelete = () => {
-    console.log('handleDelete acionado');
-    Alert.alert(
-      'Excluir Assinatura',
-      'Esta assinatura será excluída. Tem certeza?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => {
-            console.log('Confirmou exclusão');
-            deleteSubscription();
-          }
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Esta assinatura será excluída. Tem certeza?');
+      if (confirmed) {
+        deleteSubscription();
+      }
+    } else {
+      Alert.alert(
+        'Excluir Assinatura',
+        'Esta assinatura será excluída. Tem certeza?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Excluir', style: 'destructive', onPress: () => deleteSubscription() }
+        ]
+      );
+    }
   };
 
   const handleEdit = () => {
@@ -183,13 +194,7 @@ export default function SubscriptionDetails() {
           <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
             <Text style={styles.buttonText}>Editar</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => {
-              console.log('Botão excluir clicado');
-              handleDelete();
-            }}
-          >
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
             <Text style={styles.buttonText}>Excluir</Text>
           </TouchableOpacity>
         </View>
@@ -244,6 +249,16 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center'
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  backButtonText: { color: '#fff', fontSize: 16 }
+  buttonText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: '600' 
+  },
+  backButtonText: { 
+    color: '#fff', 
+    fontSize: 16 
+  }
 });
+
+
+
