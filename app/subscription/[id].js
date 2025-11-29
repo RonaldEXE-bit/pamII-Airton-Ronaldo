@@ -24,9 +24,7 @@ export default function SubscriptionDetail() {
       `Tem certeza que deseja excluir ${name}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
+        { text: 'Excluir', style: 'destructive',
           onPress: async () => {
             await removeSubscription(id);
             router.push('/');
@@ -43,8 +41,8 @@ export default function SubscriptionDetail() {
   const darkMode = true;
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#0F172A' : '#F9FAFB' }]}>
-      <View style={[styles.card, { backgroundColor: darkMode ? '#1F2937' : '#fff', borderColor: darkMode ? '#374151' : '#E5E7EB' }]}>
+    <View style={[styles.container, { backgroundColor: darkMode ? '#0F172A' : '#0f172a' }]}>
+      <View style={[styles.card, { backgroundColor: darkMode ? '#1F2937' : '#1f2937', borderColor: darkMode ? '#374151' : '#E5E7EB' }]}>
         {/* Ícone dinâmico */}
         <View style={{ alignItems: 'center', marginBottom: 12 }}>
           {getServiceIcon(name, 50)}
@@ -55,22 +53,22 @@ export default function SubscriptionDetail() {
 
         {/* Caixinhas */}
         <View style={[styles.box, { borderColor: '#F59E0B' }]}>
-          <Text style={styles.boxLabel}>💰 Valor</Text>
+          <Text style={styles.boxLabel}>Valor</Text>
           <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>R$ {parseFloat(amount).toFixed(2)}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#3B82F6' }]}>
-          <Text style={styles.boxLabel}>📅 Dia de cobrança</Text>
+          <Text style={styles.boxLabel}>Dia de cobrança</Text>
           <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{dueDay}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#10B981' }]}>
-          <Text style={styles.boxLabel}>💳 Tipo de pagamento</Text>
+          <Text style={styles.boxLabel}>Tipo de pagamento</Text>
           <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{paymentType || 'Não informado'}</Text>
         </View>
 
         <View style={[styles.box, { borderColor: '#8B5CF6' }]}>
-          <Text style={styles.boxLabel}>📝 Descrição</Text>
+          <Text style={styles.boxLabel}>Descrição</Text>
           <Text style={[styles.boxValue, { color: darkMode ? '#F3F4F6' : '#111827' }]}>{description || 'Sem descrição'}</Text>
         </View>
 
@@ -82,19 +80,19 @@ export default function SubscriptionDetail() {
         {/* Botões */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.payButton} onPress={handlePay}>
-            <Text style={styles.buttonText}>💳 Pagar</Text>
+            <Text style={styles.buttonText}>Pagar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-            <Text style={styles.buttonText}>✏️ Editar</Text>
+            <Text style={styles.buttonText}>Editar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.buttonText}>🗑️ Excluir</Text>
+            <Text style={styles.buttonText}>Excluir</Text>
           </TouchableOpacity>
         </View>
 
         {/* Voltar */}
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.buttonText}>⬅️ Voltar ao início</Text>
+          <Text style={styles.buttonText}>Voltar ao início</Text>
         </TouchableOpacity>
       </View>
     </View>
