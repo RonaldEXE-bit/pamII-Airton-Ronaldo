@@ -72,8 +72,8 @@ export default function HomeScreen() {
                   amount: item.amount,
                   dueDay: item.dueDay,
                   category: item.category,
-                  paymentMethod: item.paymentMethod, // ✅ corrigido
-                  notes: item.notes,                 // ✅ corrigido
+                  paymentMethod: item.paymentMethod,
+                  notes: item.notes,                
                   status: item.status,
                   periodicity: item.periodicity,
                 },
