@@ -32,19 +32,19 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: darkMode ? '#111827' : '#F9FAFB' }}>
+    <View style={{ flex: 1, backgroundColor: darkMode ? '#111827' : '#111827' }}>
       {/* Botão de tema */}
       <View style={{ alignItems: 'flex-end', padding: 16 }}>
         <ThemeToggle onToggle={setDarkMode} />
       </View>
 
       {/* Título */}
-      <Text style={[styles.title, { color: darkMode ? '#fff' : '#000' }]}>
+      <Text style={[styles.title, { color: darkMode ? '#fff' : '#fff' }]}>
         Subtrack
       </Text>
 
       {/* Total mensal */}
-      <Text style={[styles.subtitle, { color: darkMode ? '#fff' : '#000' }]}>
+      <Text style={[styles.subtitle, { color: darkMode ? '#fff' : '#fff' }]}>
         Total mensal: R$ {subscriptions.reduce((acc, s) => acc + s.amount, 0).toFixed(2)}
       </Text>
 
@@ -82,7 +82,7 @@ export default function HomeScreen() {
           >
             <View style={[
               styles.card,
-              { backgroundColor: darkMode ? '#1F2937' : '#fff' }
+              { backgroundColor: darkMode ? '#1F2937' : '#1f2937' }
             ]}>
               {/* Ícone dinâmico */}
               <View style={{ alignItems: 'center', marginBottom: 8 }}>
@@ -90,25 +90,25 @@ export default function HomeScreen() {
               </View>
 
               {/* Nome */}
-              <Text style={[styles.cardTitle, { color: darkMode ? '#fff' : '#000' }]}>
+              <Text style={[styles.cardTitle, { color: darkMode ? '#fff' : '#fff' }]}>
                 {item.name}
               </Text>
 
               {/* Valor + vencimento */}
-              <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+              <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#9ca3af' }]}>
                 R$ {item.amount.toFixed(2)} — vence em {getDaysUntilDue(item.dueDay)} dias
               </Text>
 
               {/* Tipo de pagamento */}
               {item.paymentMethod ? (
-                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#9ca3af' }]}>
                   💳 {item.paymentMethod}
                 </Text>
               ) : null}
 
               {/* Notas */}
               {item.notes ? (
-                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#374151' }]}>
+                <Text style={[styles.cardSubtitle, { color: darkMode ? '#9CA3AF' : '#9ca3af' }]}>
                   📝 {item.notes}
                 </Text>
               ) : null}
