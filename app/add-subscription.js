@@ -233,7 +233,7 @@ export default function AddSubscription() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#111827',
   },
   header: {
     flexDirection: 'row',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#ffffffff',
     marginBottom: 8,
   },
   input: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#1F2937',
+    color: '#000000ff',
   },
   textArea: {
     minHeight: 80,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 16,
-    color: '#1F2937',
+    color: '#000000ff',
   },
   pickerContainer: {
     backgroundColor: '#FFFFFF',
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   saveButtonDisabled: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: '#08285eff',
   },
   saveButtonText: {
     color: '#FFFFFF',
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
   },
   cancelButtonText: {
-    color: '#374151',
+    color: '#ffffffff',
     fontSize: 16,
     fontWeight: '500',
   },
