@@ -22,7 +22,7 @@ A proliferação de serviços digitais por assinatura transformou o consumo, mas
 
    Pequenos valores mensais somados representam impacto significativo no orçamento.
 
----
+#
 
 **Subtrack como solução controladora**
 
@@ -40,7 +40,7 @@ O SubTrack resolve a fragmentação oferecendo uma plataforma única onde todas 
 
    Edição, exclusão e botões de pagamento rápido para controle total.
 
---- 
+#
 
 **Funcionalidades principais do aplicativo**
 
@@ -50,14 +50,16 @@ O SubTrack oferece um conjunto abrangente de recursos projetados para cobrir tod
 
    Registro intuitivo de serviços com campos detalhados e ícones personalizados.
 
-- **Dashboard Analítico**
+- **Dashboard Analítico:**
 
    Resumo financeiro mensal consolidado com distribuição por categorias.
 
-- **Calendário de cobranças**
+- **Calendário de cobranças:**
 
    Visualização cronológica das próximas faturas para melhor planejamento.
 
-- **Pagamento rápido**
+- **Pagamento rápido:**
 
    Botões de ação direta que agilizam o processo de quitação dos serviços.
+
+# 
