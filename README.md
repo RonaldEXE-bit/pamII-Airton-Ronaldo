@@ -1,7 +1,6 @@
 # SubTrack
 
 **Aplicativo de gerenciamento de assinaturas digitais**
-
 #
 
 **O desafio do controle financeiro digital**
